@@ -15,7 +15,9 @@ define nagios::service (
   $use                 = 'generic-service',
   $template            = 'nagios/service.erb',
   $options_hash        = {},
-  $ensure              = 'present'
+  $ensure              = 'present',
+  $register            = "1",
+  $contact_groups      = 'admins',
   ) {
 
   # Autoinclude the target host class

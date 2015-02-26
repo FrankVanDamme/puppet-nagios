@@ -19,7 +19,8 @@ define nagios::host (
   $ensure        = 'present',
   $template      = 'nagios/host.erb',
   $options_hash  = {},
-  $hostgroups    = 'all'
+  $hostgroups    = 'all',
+  $contact_groups = 'admins',
   ) {
 
   include nagios::target

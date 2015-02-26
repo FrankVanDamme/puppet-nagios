@@ -165,14 +165,27 @@ class nagios::skel {
     content => template('nagios/settings/timeperiods.cfg'),
   }
 
-  file { 'nagios_templates.cfg':
+  $contact_groups="admins"
+  # in normal circumstances $real_service_description is set in nagios::service
+  $real_service_description='generic-service' 
+  file { 'nagios_template_host.cfg':
     ensure  => $nagios::manage_file,
-    path    => "${nagios::customconfigdir}/settings/templates.cfg",
+    path    => "${nagios::customconfigdir}/settings/template_host.cfg",
     mode    => '0644',
     owner   => $nagios::config_file_owner,
     group   => $nagios::config_file_group,
     require => File['nagios_configdir_settings'],
-    content => template('nagios/settings/templates.cfg'),
+    content => template('nagios/settings/template_host.cfg'),
+  }
+
+  file { 'nagios_template_service.cfg':
+    ensure  => $nagios::manage_file,
+    path    => "${nagios::customconfigdir}/settings/template_service.cfg",
+    mode    => '0644',
+    owner   => $nagios::config_file_owner,
+    group   => $nagios::config_file_group,
+    require => File['nagios_configdir_settings'],
+    content => template('nagios/settings/template_service.cfg'),
   }
 
   file { 'nagios_hostgroup_all.cfg':
