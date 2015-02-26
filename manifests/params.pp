@@ -111,6 +111,11 @@ class nagios::params {
     default                   => 'nagios',
   }
 
+  $restart = $::operatingsystem ? {
+    /(?i:Debian|Ubuntu|Mint)/ => 'service nagios3 reload',
+    default                   => 'service nagios reload',
+  }
+
   $process_args = $::operatingsystem ? {
     default => '',
   }

@@ -262,6 +262,7 @@ class nagios (
   $package                 = params_lookup( 'package' ),
   $service                 = params_lookup( 'service' ),
   $service_status          = params_lookup( 'service_status' ),
+  $restart                 = params_lookup( 'restart' ),
   $process                 = params_lookup( 'process' ),
   $process_args            = params_lookup( 'process_args' ),
   $process_user            = params_lookup( 'process_user' ),
@@ -366,12 +367,13 @@ class nagios (
   }
 
   service { 'nagios':
-    ensure     => $nagios::manage_service_ensure,
-    name       => $nagios::service,
-    enable     => $nagios::manage_service_enable,
-    hasstatus  => $nagios::service_status,
-    pattern    => $nagios::process,
-    require    => [ Package['nagios'] , Class['nagios::skel'] ] ,
+    ensure    => $nagios::manage_service_ensure,
+    name      => $nagios::service,
+    enable    => $nagios::manage_service_enable,
+    hasstatus => $nagios::service_status,
+    pattern   => $nagios::process,
+    restart   => $nagios::restart,
+    require   => [ Package['nagios'] , Class['nagios::skel'] ] ,
   }
 
   file { 'nagios.conf':
