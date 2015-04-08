@@ -21,6 +21,7 @@ define nagios::host (
   $options_hash  = {},
   $hostgroups    = 'all',
   $contact_groups = 'admins',
+  $check_command = '',
   ) {
 
   include nagios::target

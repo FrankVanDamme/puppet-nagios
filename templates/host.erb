@@ -10,4 +10,7 @@ define host{
 <% if ! (/^(none|)$/i =~ @host_parent) then -%>
     parents    <%= @host_parent %>
 <% end -%>
+<% if ! (/^(none|)$/i =~ @check_command) then -%>
+    check_command    <%= @check_command %>
+<% end -%>
 }
