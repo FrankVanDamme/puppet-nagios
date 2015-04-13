@@ -20,7 +20,7 @@ class nagios::plugins {
     nrpe_cfg => $nagios_check_disks_nrpe_cfg,
   }
   nagios::plugin { 'check_yum':
-    nrpe_cfg => 'nagios/nrpe_cfg/nrpe-check_yum.cfg.erb',
+      #nrpe_cfg => 'nagios/nrpe_cfg/nrpe-check_yum.cfg.erb',
   }
   nagios::plugin { 'check_ageandcontent.pl': }
 }
