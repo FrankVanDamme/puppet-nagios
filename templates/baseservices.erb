@@ -64,6 +64,7 @@ define service {
     service_description APT_Updates
     check_command       check_nrpe!check_apt!noarg
     use                 <%= @use %>
+    notifications_enabled 0 
     normal_check_interval 60
     retry_check_interval 20
 }
@@ -75,5 +76,8 @@ define service {
     service_description YUM_Updates
     check_command       check_nrpe!check_yum!noarg
     use                 <%= @use %>
+    notifications_enabled 0 
+    normal_check_interval 60
+    retry_check_interval 20
 }
 <% end -%>

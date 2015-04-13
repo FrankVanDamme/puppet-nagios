@@ -17,6 +17,7 @@ define nagios::service (
   $options_hash        = {},
   $ensure              = 'present',
   $register            = "1",
+  $notifications_enabled = "1",
   $contact_groups      = 'admins',
   ) {
 

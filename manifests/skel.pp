@@ -178,6 +178,7 @@ class nagios::skel {
     content => template('nagios/settings/template_host.cfg'),
   }
 
+  $notifications_enabled="1"
   file { 'nagios_template_service.cfg':
     ensure  => $nagios::manage_file,
     path    => "${nagios::customconfigdir}/settings/template_service.cfg",

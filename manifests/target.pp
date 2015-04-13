@@ -37,6 +37,7 @@ class nagios::target {
     ''      => 'nagios/baseservices.erb',
     default => $::nagios_baseservices_template,
   }
+  notify { "baseservices_template: $baseservices_template":}
   nagios::baseservices { $::fqdn:
     use      => 'generic-service',
     template => $baseservices_template,
