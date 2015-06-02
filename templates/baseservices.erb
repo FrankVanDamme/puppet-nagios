@@ -3,7 +3,7 @@
 define service {
     host_name           <%= @host_name %>
     service_description Load_Average
-    check_command       check_nrpe!check_load!noarg
+    check_command       check_nrpe_noarg!check_load
     use                 <%= @use %>
 }
 
@@ -11,7 +11,7 @@ define service {
 define service {
     host_name           <%= @host_name %>
     service_description Swap_Usage
-    check_command       check_nrpe!check_swap!noarg
+    check_command       check_nrpe_noarg!check_swap
     use                 <%= @use %>
 }
 
@@ -19,7 +19,7 @@ define service {
 define service {
     host_name           <%= @host_name %>
     service_description All_Disks_Usage
-    check_command       check_nrpe!check_all_disks_param!noarg
+    check_command       check_nrpe_noarg!check_all_disks_param
     use                 <%= @use %>
 }
 
@@ -27,7 +27,7 @@ define service {
 define service {
     host_name           <%= @host_name %>
     service_description Zombie_Processes
-    check_command       check_nrpe!check_zombie_procs!noarg
+    check_command       check_nrpe_noarg!check_zombie_procs
     use                 <%= @use %>
 }
 
@@ -35,7 +35,7 @@ define service {
 define service {
     host_name           <%= @host_name %>
     service_description Connected_Users
-    check_command       check_nrpe!check_users!noarg
+    check_command       check_nrpe_noarg!check_users
     use                 <%= @use %>
 }
 
@@ -43,7 +43,7 @@ define service {
 #define service {
 #    host_name           <%= @host_name %>
 #    service_description Mail_Queue
-#    check_command       check_nrpe!check_mailq!noarg
+#    check_command       check_nrpe_noarg!check_mailq
 #    use                 <%= @use %>
 #}
 
@@ -52,7 +52,7 @@ define service {
 define service {
     host_name           <%= @host_name %>
     service_description NTP_Sync
-    check_command       check_nrpe!check_ntp!noarg
+    check_command       check_nrpe_noarg!check_ntp
     use                 <%= @use %>
 }
 <% end -%>
@@ -62,7 +62,7 @@ define service {
 define service {
     host_name           <%= @host_name %>
     service_description APT_Updates
-    check_command       check_nrpe!check_apt!noarg
+    check_command       check_nrpe_noarg!check_apt
     use                 <%= @use %>
     notifications_enabled 0 
     normal_check_interval 60
@@ -74,7 +74,7 @@ define service {
 define service {
     host_name           <%= @host_name %>
     service_description YUM_Updates
-    check_command       check_nrpe!check_yum!noarg
+    check_command       check_nrpe_noarg!check_yum
     use                 <%= @use %>
     notifications_enabled 0 
     normal_check_interval 60
