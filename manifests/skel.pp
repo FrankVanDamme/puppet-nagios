@@ -72,6 +72,15 @@ class nagios::skel {
     require => File['nagios_configdir'],
   }
 
+  file { 'nagios_configdir_servicegroups':
+    ensure  => directory,
+    path    => "${nagios::customconfigdir}/servicegroups",
+    mode    => '0755',
+    owner   => $nagios::config_file_owner,
+    group   => $nagios::config_file_group,
+    require => File['nagios_configdir'],
+  }
+
   file { 'nagios_configdir_extra':
     ensure  => directory,
     path    => "${nagios::customconfigdir}/extra",
@@ -197,6 +206,16 @@ class nagios::skel {
     group   => $nagios::config_file_group,
     require => File['nagios_configdir_hostgroups'],
     content => template('nagios/hostgroups/all.cfg'),
+  }
+
+  file { 'nagios_servicegroup_all.cfg':
+    ensure  => $nagios::manage_file,
+    path    => "${nagios::customconfigdir}/servicegroups/all.cfg",
+    mode    => '0644',
+    owner   => $nagios::config_file_owner,
+    group   => $nagios::config_file_group,
+    require => File['nagios_configdir_servicegroups'],
+    content => template('nagios/servicegroups/all.cfg'),
   }
 
   file { 'nagios_host_localhost.cfg':

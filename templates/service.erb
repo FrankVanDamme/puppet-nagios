@@ -1,5 +1,7 @@
+# File Managed by Puppet
 
 define service {
+    servicegroups all,<%= @servicegroups %>
     host_name           <%= @host_name %>
     service_description <%= @real_service_description %>
     check_command       <%= @real_check_command %>

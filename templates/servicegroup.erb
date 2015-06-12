@@ -1,0 +1,7 @@
+# File Managed by Puppet
+
+define servicegroup {
+    servicegroup_name <%= @name %>
+    alias          <%= @alias_name %>
+    members        <%= @members %>
+}

@@ -15,6 +15,7 @@ define nagios::service (
   $use                 = 'generic-service',
   $template            = 'nagios/service.erb',
   $options_hash        = {},
+  $servicegroups       = 'uncategorized',
   $ensure              = 'present',
   $register            = "1",
   $notifications_enabled = "1",

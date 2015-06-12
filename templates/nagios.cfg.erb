@@ -7,6 +7,7 @@ log_file=<%= scope.lookupvar('nagios::log_dir') %>/nagios._log
 # and consistency among different OS. Default config files are ignored
 cfg_dir=<%= scope.lookupvar('nagios::customconfigdir') %>/settings
 cfg_dir=<%= scope.lookupvar('nagios::customconfigdir') %>/hostgroups
+cfg_dir=<%= scope.lookupvar('nagios::customconfigdir') %>/servicegroups
 cfg_dir=<%= scope.lookupvar('nagios::customconfigdir') %>/hosts
 cfg_dir=<%= scope.lookupvar('nagios::customconfigdir') %>/services
 cfg_dir=<%= scope.lookupvar('nagios::customconfigdir') %>/commands
