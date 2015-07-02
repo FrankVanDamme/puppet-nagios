@@ -38,9 +38,11 @@ class nagios::target {
     default => $::nagios_baseservices_template,
   }
   notify { "baseservices_template: $baseservices_template":}
+  if !defined(Nagios::Baseservices[$::fqdn]) {
   nagios::baseservices { $::fqdn:
     use      => 'generic-service',
     template => $baseservices_template,
+  }
   }
 
   include nagios::plugins

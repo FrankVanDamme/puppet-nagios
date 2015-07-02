@@ -20,6 +20,8 @@ define nagios::service (
   $register            = "1",
   $notifications_enabled = "1",
   $contact_groups      = 'admins',
+  $timeperiod          = '24x7',
+  $check_period          = '24x7',
   ) {
 
   # Autoinclude the target host class

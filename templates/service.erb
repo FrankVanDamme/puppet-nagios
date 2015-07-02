@@ -7,4 +7,6 @@ define service {
     check_command       <%= @real_check_command %>
     use                 <%= @use %>
     notifications_enabled <%= @notifications_enabled %> 
+    notification_period <%= @timeperiod %>
+    check_period        <%= @check_period %>
 }
