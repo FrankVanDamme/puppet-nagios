@@ -32,12 +32,12 @@ define service {
 }
 
 # Connected Users
-define service {
-    host_name           <%= @host_name %>
-    service_description Connected_Users
-    check_command       check_nrpe_noarg!check_users
-    use                 <%= @use %>
-}
+# define service {
+#     host_name           <%= @host_name %>
+#     service_description Connected_Users
+#     check_command       check_nrpe_noarg!check_users
+#     use                 <%= @use %>
+# }
 
 # Mail Queues
 #define service {
