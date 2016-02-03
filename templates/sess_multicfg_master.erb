@@ -1,0 +1,4 @@
+command [ removecookie ] = rm -vf /tmp/nag_multi_cookie_<%=name %>
+command [ randomstring ] = dd 2>/dev/null if=/dev/random count=1 | sha1sum | sed -e 's/ *-//'
+command [ put_session_<%= host_name %> ] = /usr/bin/curl --silent -o - -b /tmp/nag_multi_cookie_<%=name %> -c /tmp/nag_multi_cookie_<%=name %> --resolve sesstest.vub.ac.be:80:<%= ip %> "http://sesstest.vub.ac.be/lb-test/apptest/set-get-session.php?action=setsessvar&sessvarvalue=$randomstring$" ; echo $? 
+
