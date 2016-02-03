@@ -430,7 +430,12 @@ class nagios (
       File <<| tag == "nagios_check_${nagios::target::magic_tag}" |>>
     }
   }
+  
+  # $::nagios_filemode is all well and nice, but for this we really need concat
+  Concat <<| tag == "nagios_session_${nagios::target::magic_tag}" |>>
+  Concat::Fragment <<| tag == "nagios_session_${nagios::target::magic_tag}" |>>
 
+  Nagios::Command <<| |>> 
 
   ### Include custom class if $my_class is set
   if $nagios::my_class {
