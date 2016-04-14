@@ -4,7 +4,7 @@ host=$1
 fence_res_out="$(crm resource status p_fence_$host 2>&1)"
 echo -n "FENCE_$host "
 
-echo $fence_res_out | grep -q "^resource p_fence_ross is running on: "
+echo $fence_res_out | grep -q "^resource p_fence_${host} is running on: "
 running=$?
 
 if [[  $running -eq 0 ]]

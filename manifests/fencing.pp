@@ -9,7 +9,7 @@ class nagios::fencing (
     # define the service itself (fencing device which can kill the node we're
     # doing the puppet run on)
     nagios::service { "$hostname fencing":
-	host_name     => $cluster,
+	host_name     => "cluster-$cluster",
 	check_command => "check_nrpe_1arg!check_fence_$hostname",
 	servicegroups => "critical",
     }
