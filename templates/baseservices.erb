@@ -1,3 +1,6 @@
+# #############################
+# INSTALLED WITH PUPPET
+# #############################
 
 # Load Average
 define service {
@@ -19,7 +22,10 @@ define service {
 define service {
     host_name           <%= @host_name %>
     service_description All_Disks_Usage
-    check_command       check_nrpe_noarg!check_all_disks_param
+    check_command       check_nrpe_noarg!check_disk
+    <% if @environment != "production" -%>
+    notifications_enabled 0 
+    <% end -%>
     use                 <%= @use %>
 }
 
@@ -49,12 +55,12 @@ define service {
 
 <% if scope.lookupvar("ntp_server") != "" and scope.lookupvar("ntp_server") != :undefined -%>
 # NTP Sync
-define service {
-    host_name           <%= @host_name %>
-    service_description NTP_Sync
-    check_command       check_nrpe_noarg!check_ntp
-    use                 <%= @use %>
-}
+#define service {
+#    host_name           <%= @host_name %>
+#    service_description NTP_Sync
+#    check_command       check_nrpe_noarg!check_ntp
+#    use                 <%= @use %>
+#}
 <% end -%>
 
 <% if scope.lookupvar("osfamily") == "Debian" -%>
@@ -62,7 +68,7 @@ define service {
 define service {
     host_name           <%= @host_name %>
     service_description APT_Updates
-    check_command       check_nrpe_noarg!check_apt
+    check_command       check_nrpe_timeout!check_apt
     use                 <%= @use %>
     notifications_enabled 0 
     normal_check_interval 60
