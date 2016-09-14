@@ -1,0 +1,503 @@
+#!/usr/bin/perl 
+
+# DO NOT USE EMBEDDED PERL
+# nagios: -epn
+
+################################################################################
+# check_maatkit - Nagios Plug-In for Maatkit checks. 
+#
+# @author  Ryan Lowe <ryan.a.lowe@percona.com>
+# @date    2009-05-01
+# @license GPL v2
+################################################################################
+
+use strict;
+use warnings FATAL => 'all';
+use Pod::Usage;
+use Getopt::Long;
+use English qw(-no_match_vars);
+use DBI;
+use lib "/usr/local/nagios/libexec";
+use lib "/usr/lib/nagios/plugins";
+use lib "/usr/lib64/nagios/plugins";
+use utils qw(%ERRORS);
+
+my $VERSION = '0.0.9';
+my @CHECKS = qw(mk-deadlock-logger);
+my %OPTIONS;
+my %ARGS;
+
+################################################################################
+# Get configuration information
+################################################################################
+
+# Parse command line opts
+my $gop=new Getopt::Long::Parser;
+$gop->configure('no_ignore_case','bundling');
+if (!$gop->getoptions(
+    'args|a=s%'    => \%ARGS,
+    'check|K=s'    => \$OPTIONS{'check'   },
+    'critical|c=s' => \$OPTIONS{'critical'},
+    'database|d=s' => \$OPTIONS{'database'},
+    'help|h'       => \$OPTIONS{'help'    },
+    'hostname|H=s' => \$OPTIONS{'host'    },
+    'password|p=s' => \$OPTIONS{'password'},
+    'port|P=i'     => \$OPTIONS{'port'    },
+    'socket|s=s'   => \$OPTIONS{'socket'  },
+    'table|T=s'    => \$OPTIONS{'table'   },
+    'timeout|t=i'  => \$OPTIONS{'timeout' },
+    'username|u=s' => \$OPTIONS{'user'    },
+    'verbose|v+'   => \$OPTIONS{'verbose' },
+    'version|V'    => \$OPTIONS{'version' },
+    'warning|w=s'  => \$OPTIONS{'warning' } ) ) {
+
+    pod2usage(2);
+}
+
+# Help if asked for or no check given
+pod2usage(2) if     ($OPTIONS{'help'});
+pod2usage(2) unless ($OPTIONS{'check'});
+
+# Yay for versions
+if ($OPTIONS{'version'}) {
+    print "$VERSION\n";
+    exit $ERRORS{'OK'};
+}
+
+# Verify valid check
+if (grep {/^$OPTIONS{'check'}$/} @CHECKS) {
+    $OPTIONS{'check'} =~ /^(.*)$/;
+    $OPTIONS{'check'} = $1;
+} else {
+    print "UNKNOWN: Check $OPTIONS{'check'} is unrecognized\n";
+    exit $ERRORS{'UNKNOWN'};
+}
+
+# Set global defaults/validate options
+$OPTIONS{'timeout'} = $OPTIONS{'timeout'} ? $OPTIONS{'timeout'} : 10;
+$OPTIONS{'verbose'} = $OPTIONS{'verbose'} ? $OPTIONS{'verbose'} : 1;
+validate_input(\%OPTIONS, 'timeout', 'seconds');
+
+# Clean up args (remove leading/trailing space)
+# 'foo = bar' becomes 'foo ' => ' bar' becomes 'foo' => 'bar'
+%ARGS = map({$a=$ARGS{$_}; $a=~s/^\s+//g; s/\s+$//g; $_=>$a} keys(%ARGS));
+
+################################################################################
+# Begin the main program
+################################################################################
+
+# Set db defaults/validate options
+$OPTIONS{'host'} = $OPTIONS{'host'} ? $OPTIONS{'host'} : 'localhost';
+$OPTIONS{'port'} = $OPTIONS{'port'} ? $OPTIONS{'port'} : '3306';
+validate_input(\%OPTIONS, 'host', 'hostname');
+validate_input(\%OPTIONS, 'port', 'port');
+
+# Attempt db connection
+my $connection_string  = 'DBI:mysql:';
+$connection_string    .= "host=$OPTIONS{'host'};";
+$connection_string    .= "database=$OPTIONS{'database'};"
+    if $OPTIONS{'database'};
+$connection_string    .= "mysql_socket=$OPTIONS{'socket'};"
+    if $OPTIONS{'socket'} and $OPTIONS{'host'} eq 'localhost';
+$connection_string    .= "port=$OPTIONS{'port'};";
+$connection_string    .= "mysql_multi_statements=1";
+my $dbh;
+eval {
+    local $SIG{ALRM} = sub { die 'TIMEOUT' };
+    alarm($OPTIONS{'timeout'});
+
+    $dbh = DBI->connect ( 
+        $connection_string,
+        $OPTIONS{'user'},
+        $OPTIONS{'password'},
+        { RaiseError => 1, PrintError => 0 } 
+    );
+    alarm(0);
+};
+alarm(0);
+
+# Check for timeout
+if ( $@ ) {
+    print "CRITICAL: Could not connect to MySQL";
+    print " in $OPTIONS{'timeout'} seconds" if ($@ eq "TIMEOUT");
+    print "\n";
+    print $@ if ($OPTIONS{'verbose'} > 2);
+    exit $ERRORS{'CRITICAL'};
+}
+
+################################################################################
+# Begin check processing
+################################################################################
+
+my $check = $OPTIONS{'check'};
+
+$check =~ s/-/_/g;
+eval "$check(\$dbh, \\%OPTIONS, \\%ARGS);";
+
+# Uh... shouldn't be here...
+print "UNKNOWN: Check '$check' failed to execute\n";
+print $@ if ($@ and $OPTIONS{'verbose'} > 2);
+exit $ERRORS{'UNKNOWN'};
+
+################################################################################
+# Subroutines and helpers
+################################################################################
+
+# Validate user input
+sub validate_input {
+    my ($hash, $key, $type) = @_;
+
+    # Percents - positive integers 0-100 optionally ending in '%'
+    if ($type eq 'percent') {
+        $hash->{$key} =~ s/\%$//;
+        if ($hash->{$key} =~ /^(\d+)$/) {
+            $hash->{$key} = $1;
+        } else {
+            print "UNKNOWN: '$key' should contain a positive integer (in percent)\n";
+            exit $ERRORS{'UNKNOWN'};
+        }
+        unless ($hash->{$key} <= 100) {
+            print "UNKNOWN: '$key' should be within 0-100%";
+            exit $ERRORS{'UNKNOWN'};
+        }
+
+    # Seconds - positive intgers optionally ending in 's'
+    } elsif ($type eq 'seconds') {
+        $hash->{$key} =~ s/s$//;
+        if ($hash->{$key} =~ /(\d+)$/) {
+            $hash->{$key} = $1;
+        } else {
+            print "UNKNOWN: '$key' should contain a positive integer (in seconds)\n";
+            exit $ERRORS{'UNKNOWN'};
+        }
+
+    # Port - positive integers
+    } elsif ($type eq 'port') {
+        if ($hash->{$key} =~ /^(\d+)$/) {
+            $hash->{$key} = $1;
+        } else {
+            print "UNKNOWN: '$key' should contain a TCP port\n";
+            exit $ERRORS{'UNKNOWN'};
+        }
+
+    # Host - any string only containing \w, '-', '.'
+    } elsif ($type eq 'hostname') {
+        if ($hash->{$key} =~ /^([\w\-\.]+)$/) {
+            $hash->{$key} = $1;
+        } else {
+            print "UNKNOWN: '$key' should contain a valid hostname\n";
+            exit $ERRORS{'UNKNOWN'};
+        }
+
+    # Time - positive integers ending in [s|m|h|d|w]
+    } elsif ($type eq 'time') {
+        if ($hash->{$key} =~ /s$/) {
+            $hash->{$key} =~ s/s$//;
+            if ($hash->{$key} =~ /(\d+)$/) {
+                $hash->{$key} = $1;
+            } else {
+                print "UNKNOWN: '$key' should contain a positive integer, followed by [s|m|h|d|w]\n";
+                exit $ERRORS{'UNKNOWN'};
+            }
+        } elsif ($hash->{$key} =~ /m$/) {
+            $hash->{$key} =~ s/m$//;
+            if ($hash->{$key} =~ /(\d+)$/) {
+                $hash->{$key} = ($1 * 60);
+            } else {
+                print "UNKNOWN: '$key' should contain a positive integer, followed by [s|m|h|d|w]\n";
+                exit $ERRORS{'UNKNOWN'};
+            } 
+        } elsif ($hash->{$key} =~ /h$/) {
+            $hash->{$key} =~ s/h$//;
+            if ($hash->{$key} =~ /(\d+)$/) {
+                $hash->{$key} = ($1 * 3600);
+            } else {
+                print "UNKNOWN: '$key' should contain a positive integer, followed by [s|m|h|d|w]\n";
+                exit $ERRORS{'UNKNOWN'};
+            }
+        } elsif ($hash->{$key} =~ /d$/) {
+            $hash->{$key} =~ s/d$//;
+            if ($hash->{$key} =~ /(\d+)$/) {
+                $hash->{$key} = ($1 * 86400);
+            } else {
+                print "UNKNOWN: '$key' should contain a positive integer, followed by [s|m|h|d|w]\n";
+                exit $ERRORS{'UNKNOWN'};
+            }
+        } elsif ($hash->{$key} =~ /w$/) {
+            $hash->{$key} =~ s/w$//;
+            if ($hash->{$key} =~ /(\d+)$/) {
+                $hash->{$key} = ($1 * 604800);
+            } else {
+                print "UNKNOWN: '$key' should contain a positive integer, followed by [s|m|h|d|w]\n";
+                exit $ERRORS{'UNKNOWN'};
+            } 
+        } else {
+            print "UNKNOWN: '$key' should contain a positive integer, followed by [s|m|h|d|w]\n";
+            exit $ERRORS{'UNKNOWN'};
+        }
+
+    # Uh oh...
+    } else {
+        print "UNKNOWN: Internal error, unable to verify '$key'\n";
+        exit $ERRORS{'UNKNOWN'};
+    }
+}
+
+################################################################################
+# Checks
+################################################################################
+
+# Mysql query check
+sub mk_deadlock_logger {
+    my ($dbh, $opts, $args, $processlist, $variables, $status, $dbs) = @_;
+
+    # Validate args
+    $args->{'timespan'}      = $args->{'timespan'}      ? 
+        $args->{'timespan'}      : 3600;
+    $args->{'query_timeout'} = $args->{'query_timeout'} ?
+        $args->{'query_timeout'} : 5; 
+    validate_input($args, 'timespan', 'time');
+
+    my $query = "
+SELECT ROUND(COUNT(*)/2) AS deadlock_cnt 
+  FROM `$OPTIONS{'database'}`.`$OPTIONS{'table'}` 
+  WHERE ts >= DATE_SUB(NOW(), INTERVAL $args->{'timespan'} SECOND)
+";
+
+    my $res;
+    my $t;
+
+    # Attempt query
+    eval { 
+        local $SIG{ALRM} = sub { die 'TIMEOUT' };
+        alarm($args->{'query_timeout'});
+
+        $res = $dbh->selectall_hashref($query, 1); 
+
+        $t = (values(%{ $res }))[0];
+        alarm(0);
+    };
+    alarm(0);
+
+    if ($@) {
+        print $@;
+        print 'CRITICAL: Query did not complete successfully';
+        print " in $args->{'query_timeout'} seconds" if ($@ eq 'TIMEOUT');
+        print "\n";
+        print "Errno: $dbh->{'mysql_errno'}\n" if ($opts->{'verbose'} > 1);
+        print "Error: $dbh->{'mysql_error'}\n" if ($opts->{'verbose'} > 2);
+        print $@ if ($opts->{verbose} > 2);
+        exit $ERRORS{'CRITICAL'};
+    }
+ 
+    if ($t->{'deadlock_cnt'} >= $opts->{'critical'}) {
+        print "CRITICAL: $t->{'deadlock_cnt'} deadlocks in the last $args->{'timespan'} seconds\n";
+        exit $ERRORS{'CRITICAL'};
+    } elsif ($t->{'deadlock_cnt'} >= $OPTIONS{'warning'}) {
+        print "WARNING: $t->{'deadlock_cnt'} deadlocks in the last $args->{'timespan'} seconds\n";
+        exit $ERRORS{'WARNING'};
+    } 
+
+    print "OK: $t->{'deadlock_cnt'} deadlocks in the last $args->{'timespan'} seconds\n";
+    exit $ERRORS{'OK'};
+}
+
+sub mk_heartbeat {
+    my ($dbh, $opts, $args, $processlist, $variables, $status, $dbs) = @_;
+
+    my @records = `env mk-heartbeat --check -h $OPTIONS{'hostname'} -u $OPTIONS{'username'} -p $OPTIONS{'password'} -D $OPTIONS{'database'} -t $OPTIONS{'table'} --recurse $args->{'recurse'}`;
+
+    use Data::Dumper;
+    print Dumper(\@records);
+
+}
+
+=pod
+
+=head1 NAME
+
+check_maatkit - Nagios checks for Maatkit
+
+=head1 SYNOPSIS
+
+ check_maatkit -K <check_name> [options]
+
+ Options:
+   -a, --args=<key=value>    Optional arguments.
+   -K, --check=<check_name>  The check to run
+   -c, --critical=<limit>    The level at which a critical alarm is raised.
+   -d, --database=<dbname>   The database to use
+   -h, --help                Display this message and exit
+   -H, --host=<hostname>     The target MySQL server host
+   -p, --password=<password> The password of the MySQL user
+   --port=<portnum>          The port MySQL is listening on
+   -s, --socket=<sockfile>   Use the specified mysql unix socket to connect
+   -t, --timeout=<timeout>   Seconds before connection/query attempts timeout
+   -u, --username=<username> The MySQL user used to connect
+   -v, --verbose             Increase verbosity level
+   -V, --version             Display version information and exit
+   -w, --warning             The level at which a warning is raised.
+
+ Defaults are:
+
+ ATTRIBUTE                  VALUE
+ -------------------------- ------------------
+ args                       No default value
+ check                      No default value
+ critical                   Check-specific
+ database                   No default value
+ help                       FALSE
+ host                       localhost
+ password                   No default value
+ port                       3306
+ socket                     No default value
+ timeout                    10 seconds
+ username                   No default value
+ verbose                    1 (out of 3)
+ version                    FALSE
+ warning                    Check-specific
+
+ The following checks are supported:
+
+ mk-deadlock-logger
+
+=head1 OPTIONS
+
+=over
+
+=item I<--args>|I<-a>
+
+Optional additional arguments for a particular check. Always takes the format 
+C<--args 'foo=bar'>. Check specific and can be repeated as often as necessary.
+
+=item I<--check>|I<-K>
+
+The check to run, see L<CHECKS> section for details. Only one check may be 
+specified at a time.
+
+=item I<--critical>|I<-c>
+
+The level at which a critical alarm is raised. Check-specific.
+
+=item I<--database>|I<-d>
+
+The database to use. No default value, will connect without a database if 
+not specified.
+
+=item I<--help>|I<-h>
+
+Display a short help message and exit.
+
+=item I<--host>|I<-H>
+
+The target MySQL server host.
+
+=item I<--password>|I<-p>
+
+The password of the MySQL user.
+
+=item I<--port>
+
+The port MySQL is listening on.
+
+=item I<--socket>|I<-s>
+
+Use the specified unix socket to connect with. Ignored if --host is specified 
+or is anything except 'localhost'.
+
+=item I<--timeout>|I<-t>
+
+Seconds before connection/query attempts timeout. Note that this does B<NOT>
+mean that the whole plugin will timeout in this interval, just the initial
+connection and each subsequent db query. The C<mysql_query> check has also has
+a separate timeout for the test query in case a different timeout is desired.
+
+=item I<--username>|I<-u>
+
+The MySQL user used to connect
+
+=item I<--verbose>|I<-v>
+
+Increase verbosity level. Can be used up to three times.
+
+=item I<--version>|I<-V>
+
+Display version information and exit.
+
+=item I<--warning>|I<-w>
+
+The level at which a warning is raised.  Check-specific.
+
+=back
+
+=head1 CHECKS
+
+=over
+
+=item B<mk-deadlock-logger>
+
+Checks deadlocks over time.
+    Permissions required: SELECT on logger table.
+    I<--args> => no default:
+        C<timespan=...> => optional timespan over which to check for deadlocks. default 1 hour
+    I<--warning> => default 2 deadlocks over timespan
+    I<--critical> => default 10 deadlocks over timespan
+
+=item B<mk-heartbeat>
+
+Check replication heartbeat
+    Permissions required: PROCESS, SELECT, INSERT, UPDATE, DELETE on heartbeat table.
+    I<--args> => no default:
+        C<master=...> => the master against which to execute mk-heartbeat
+        C<user=...> => User to connect to the database
+        C<database=...> => Database with the heartbeat table
+        C<table=...> => Heartbeat Table
+        C<recurse=...> => Level of recurse. Defaults to 6
+    I<--warning> => default 30 seconds behind master
+    I<--critical> => default 300 seconds behind master
+
+=back
+
+=head1 SYSTEM REQUIREMENTS
+
+check_mysql_all requires the following Perl modules:
+
+  Pod::Usage
+  Getopt::Long
+  DBI
+  DBD::mysql
+
+=head1 BUGS
+
+Please report all bugs and feature requests to 
+http://code.google.com/p/check-mysql-all
+
+=head1 LICENSE
+
+This program is copyright (c) 2008 Ryan Lowe.
+Feedback and improvements are welcome (ryan.a.lowe@percona.com).
+
+THIS PROGRAM IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR IMPLIED
+WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
+MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, version 2; OR the Perl Artistic License.  On UNIX and similar
+systems, you can issue `man perlgpl' or `man perlartistic' to read these
+licenses.
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place, Suite 330, Boston, MA  02111-1307 USA.
+
+=head1 AUTHOR
+
+Ryan Lowe (ryan.a.lowe@percona.com)
+
+=head1 VERSION
+
+This manual page documents 0.0.8 of check_maatkit
+
+=cut
+
