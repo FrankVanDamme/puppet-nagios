@@ -36,8 +36,6 @@ class nagios::mysqlrepl (
     nagios::service { "mysql-repl-$cluster-$::hostname":
 	host_name     => "cluster-$cluster",
 	check_command => "check_nrpe_1arg!check_mysql_repl_$::hostname",
-	check_period  => "workhours",
-	servicegroups => "MySQL,critical", 
     }
     # Every host exports a "slave" resource, which can be realized on all OTHER
     # hosts in your MySQL cluster. Basically it means "monitor the status of
