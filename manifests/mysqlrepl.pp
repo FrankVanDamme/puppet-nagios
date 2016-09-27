@@ -18,6 +18,13 @@ define nagios::mysqlrepl::master (
 class nagios::mysqlrepl (
     $server_id=hiera(mysql_server_id)
 ) {
+    $cluster_master=hiera("cluster_master")
+    if ( $cluster_master == $hostname ){
+	nagios::service { "mysql-masterhost-test":
+	    host_name     => "cluster-$cluster",
+	    check_command => "check_nrpe_1arg_logged!check_mysql_masterhost",
+	}
+    }
     file { '/usr/local/bin/check_mysql_all':
 	owner => 'root',
 	group => 'root',
