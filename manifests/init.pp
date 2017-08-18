@@ -274,13 +274,13 @@ class nagios (
   $log_dir                 = params_lookup( 'log_dir' ),
   $log_file                = params_lookup( 'log_file' ),
   $commands                = {},
-  $contacts                = {},
-  $contactgroups           = {},
-  $plugins                 = {},
-  $hosts                   = {},
-  $hostgroups              = {},
-  $services                = {},
-  $servicegroups           = {},
+  Hash $contacts                = {},
+  Hash $contactgroups           = {},
+  Hash $plugins                 = {},
+  Hash $hosts                   = {},
+  Hash $hostgroups              = {},
+  Hash $services                = {},
+  Hash $servicegroups           = {},
   ) inherits nagios::params {
 
   $bool_install_prerequisites = any2bool($install_prerequisites)
@@ -526,9 +526,12 @@ class nagios (
 
     $result = hiera_hash("${module_name}::${restype}s", undef)
 
+    # we want the value of the variable called, for example, $servicegroups
+    $typeval = getvar("${restype}s")
+
     $final = $result ? {
-      undef   => "${module_name}::${restype}s",
-      ''      => "${module_name}::${restype}s",
+      undef   => $typeval,
+      ''      => $typeval,
       default => $result,
     }
 
@@ -539,7 +542,7 @@ class nagios (
     # parameters = elements,
     # and type is $restype
 
-    $fulltype = "${module_name}::$restype"
+    $fulltype = "${module_name}::${restype}"
     $final.each | $name, $args | {
       Resource[$fulltype] { $name:
 	  * => $args
