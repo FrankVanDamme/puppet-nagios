@@ -7,19 +7,12 @@
 # Usage:
 # include nagios::target
 #
-class nagios::target {
+class nagios::target inherits nagios::params {
   # # #
   # Here is defined where on nagios server check files are saved
   # This MUST be the same of $::nagios::customconfigdir
   # HINT: Do not mess with default path names...
 
-  $customconfigdir = $::nagios_customconfigdir ? {
-    ''      => '/etc/nagios/auto.d',
-    undef   => '/etc/nagios/auto.d',
-    default => $::nagios_customconfigdir,
-  }
-
-  # TODO: Find a smarter solution that doesn't requre TopScope Variables
   $magic_tag = get_magicvar($::nagios_grouplogic)
 
   if !defined(Nagios::Host[$::fqdn]) {
