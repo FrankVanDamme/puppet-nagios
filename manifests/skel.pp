@@ -90,17 +90,31 @@ class nagios::skel {
     require => File['nagios_configdir'],
   }
 
-  file { 'nagios_configdir_manual':
-    ensure  => directory,
-    path    => "${nagios::customconfigdir}/manual",
-    mode    => '0755',
-    owner   => $nagios::config_file_owner,
-    group   => $nagios::config_file_group,
-    source  => $nagios::manual_dir_source,
-    recurse => true,
-    force   => $nagios::bool_manual_dir_purge,
-    purge   => $nagios::bool_manual_dir_purge,
-    require => File['nagios_configdir'],
+  if ( $manual_dir_source == undef ) {
+      file { 'nagios_configdir_manual':
+	ensure  => directory,
+	path    => "${nagios::customconfigdir}/manual",
+	mode    => '0755',
+	owner   => $nagios::config_file_owner,
+	group   => $nagios::config_file_group,
+	recurse => true,
+	force   => $nagios::bool_manual_dir_purge,
+	purge   => $nagios::bool_manual_dir_purge,
+	require => File['nagios_configdir'],
+      }
+  } else {
+      file { 'nagios_configdir_manual':
+	ensure  => directory,
+	path    => "${nagios::customconfigdir}/manual",
+	mode    => '0755',
+	owner   => $nagios::config_file_owner,
+	group   => $nagios::config_file_group,
+	source  => $nagios::manual_dir_source,
+	recurse => true,
+	force   => $nagios::bool_manual_dir_purge,
+	purge   => $nagios::bool_manual_dir_purge,
+	require => File['nagios_configdir'],
+      }
   }
 
   file { 'nagios_modulesdir':
