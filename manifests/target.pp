@@ -13,6 +13,7 @@ class nagios::target inherits nagios::params {
   # This MUST be the same of $::nagios::customconfigdir
   # HINT: Do not mess with default path names...
 
+  $customconfigdir = "${config_dir}/auto.d"
   $magic_tag = get_magicvar($::nagios_grouplogic)
 
   if !defined(Nagios::Host[$::fqdn]) {
@@ -30,7 +31,6 @@ class nagios::target inherits nagios::params {
     ''      => 'nagios/baseservices.erb',
     default => $::nagios_baseservices_template,
   }
-  notify { "baseservices_template: $baseservices_template":}
   if !defined(Nagios::Baseservices[$::fqdn]) {
   nagios::baseservices { $::fqdn:
     use      => 'generic-service',
