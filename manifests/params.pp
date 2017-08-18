@@ -28,8 +28,6 @@ class nagios::params {
 
   $check_external_commands = true
 
-  $plugins = true
-
   $use_ssl = true
 
   $cachedir = $::operatingsystem ? {

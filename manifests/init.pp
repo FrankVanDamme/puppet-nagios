@@ -32,8 +32,6 @@
 #
 # [*check_external_commands*]
 #
-# [*plugins*]
-#
 # [*use_ssl*]
 #
 # [*cachedir*]
@@ -230,7 +228,6 @@ class nagios (
   $nagiosadmin_email       = params_lookup('nagiosadmin_email'),
   $nagiosadmins_members    = params_lookup('nagiosadmins_members'),
   $check_external_commands = params_lookup( 'check_external_commands' ),
-  $plugins                 = params_lookup( 'plugins' ),
   $use_ssl                 = params_lookup( 'use_ssl' ),
   $cachedir                = params_lookup( 'cachedir' ),
   $resourcefile            = params_lookup( 'resourcefile' ),
@@ -275,7 +272,15 @@ class nagios (
   $pid_file                = params_lookup( 'pid_file' ),
   $data_dir                = params_lookup( 'data_dir' ),
   $log_dir                 = params_lookup( 'log_dir' ),
-  $log_file                = params_lookup( 'log_file' )
+  $log_file                = params_lookup( 'log_file' ),
+  $commands                = {},
+  $contacts                = {},
+  $contactgroups           = {},
+  $plugins                 = {},
+  $hosts                   = {},
+  $hostgroups              = {},
+  $services                = {},
+  $servicegroups           = {},
   ) inherits nagios::params {
 
   $bool_install_prerequisites = any2bool($install_prerequisites)
@@ -391,7 +396,7 @@ class nagios (
   }
 
   # The whole nagios configuration directory can be recursively overriden
-  if $nagios::source_dir {
+  if $nagios::source_dir != '' {
     file { 'nagios.dir':
       ensure  => directory,
       path    => $nagios::config_dir,
@@ -492,5 +497,53 @@ class nagios (
   ### Prerequisites
   if $nagios::bool_install_prerequisites {
     include nagios::prerequisites
+  }
+
+  # Merge hashes from multiple layer of hierarchy in hiera
+  $hiera_server_options = hiera_hash("${module_name}::server_options", undef)
+
+  $fin_server_options = $hiera_server_options ? {
+    undef   => $server_options,
+    ''      => $server_options,
+    default => $hiera_server_options,
+  }
+
+  $restypes = [ 
+    'command', 
+    'contact', 
+    'contactgroup', 
+    'host',
+    'hostgroup',
+    'plugin',
+    'service',
+    'servicegroup',  
+  ]
+
+  $restypes.each | $restype | {
+
+    # a (hash) parameter listing the resources is good,
+    # but a hiera lookup for the same is better 
+
+    $result = hiera_hash("${module_name}::${restype}s", undef)
+
+    $final = $result ? {
+      undef   => "${module_name}::${restype}s",
+      ''      => "${module_name}::${restype}s",
+      default => $result,
+    }
+
+    validate_hash($final)
+
+    # for each hash element of $final, create a resource with 
+    # the name = key,
+    # parameters = elements,
+    # and type is $restype
+
+    $fulltype = "${module_name}::$restype"
+    $final.each | $name, $args | {
+      Resource[$fulltype] { $name:
+	  * => $args
+       }
+    }
   }
 }
