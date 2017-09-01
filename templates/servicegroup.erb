@@ -2,8 +2,8 @@
 
 define servicegroup {
     servicegroup_name <%= @name %>
-    alias          <%= @alias_name -%>
-    <%# if @members != "" %>
-    members        <%= @members -%>
-    <%# end %>
+    alias          <%= @alias_name %>
+<% if @members != '' -%>
+    members        <%= @members %>
+<% end -%>
 }

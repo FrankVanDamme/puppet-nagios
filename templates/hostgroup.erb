@@ -3,5 +3,7 @@
 define hostgroup {
     hostgroup_name <%= @name %>
     alias          <%= @alias_name %>
+<% if @members != '' -%>
     members        <%= @members %>
+<% end -%>
 }

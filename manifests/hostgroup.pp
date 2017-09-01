@@ -2,7 +2,7 @@
 #
 #
 define nagios::hostgroup (
-  $members,
+  $members       = '',
   $alias_name,
   $ensure        = 'present',
   $template      = 'nagios/hostgroup.erb',
