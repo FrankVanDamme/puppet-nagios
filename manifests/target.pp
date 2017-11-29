@@ -16,6 +16,7 @@ class nagios::target (
   Hash $hostgroups              = {},
   Hash $services                = {},
   Hash $servicegroups           = {},
+  String $config_dir            = params_lookup('config_dir'),
 ) inherits nagios::params {
   # # #
   # Here is defined where on nagios server check files are saved
