@@ -9,14 +9,17 @@ define nagios::mysqlrepl::slave (
 
 define nagios::mysqlrepl::master (
     $server_id, 
+    $masterhost_check,
 ) {
     nrpe::config{ "check_mysql_repl_${name}.cfg":
-	content => "command[check_mysql_repl_${name}]=/usr/local/bin/mysql_masterhost",
+	content => "command[check_mysql_repl_${name}]=$masterhost_check",
     }
 }
 
 class nagios::mysqlrepl (
-    $server_id=hiera(mysql_server_id)
+    $server_id = hiera(mysql_server_id),
+    $cluster   = $::cluster_name,
+    $masterhost_check = '/usr/local/bin/mysql_masterhost',
 ) {
     $cluster_master=hiera("cluster_master")
     if ( $cluster_master == $hostname ){
@@ -55,8 +58,9 @@ class nagios::mysqlrepl (
     # On the host doing the puppet run, install a nagios/nrpe command which 
     # checks the master status
     nagios::mysqlrepl::master  { "$::hostname" :
-	tag       => [ $::clientcert, $cluster ],
-	server_id => $server_id,
+	tag              => [ $::clientcert, $cluster ],
+	server_id        => $server_id,
+	masterhost_check => $masterhost_check,
     }
     # Also install the "check the slave status of the other nodes" command,
     # excluding the one exported on the local host.
