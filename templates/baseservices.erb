@@ -23,7 +23,7 @@ define service {
     host_name           <%= @host_name %>
     service_description All_Disks_Usage
     check_command       check_nrpe_noarg!check_disk
-    <% if @environment != "production" -%>
+    <% if @apptier != "production" -%>
     notifications_enabled 0 
     <% end -%>
     use                 <%= @use %>
