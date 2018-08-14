@@ -6,7 +6,9 @@ define service {
     service_description <%= @real_service_description %>
     check_command       <%= @real_check_command %>
     use                 <%= @use %>
+<% if not @notifications_enabled.nil? -%>
     notifications_enabled <%= @notifications_enabled %> 
+<% end -%>
     notification_period <%= @timeperiod %>
     check_period        <%= @check_period %>
 }

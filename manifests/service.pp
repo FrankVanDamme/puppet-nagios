@@ -18,7 +18,7 @@ define nagios::service (
   $servicegroups       = 'uncategorized',
   $ensure              = 'present',
   $register            = "1",
-  $notifications_enabled = "1",
+  $notifications_enabled = undef,
   $contact_groups      = 'admins',
   $timeperiod          = '24x7',
   $check_period          = '24x7',
