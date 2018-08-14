@@ -66,6 +66,7 @@ define service {
 <% if scope.lookupvar("osfamily") == "Debian" -%>
 ## APT Updates
 define service {
+    servicegroups       updates
     host_name           <%= @host_name %>
     service_description APT_Updates
     check_command       check_nrpe_timeout!check_apt
@@ -78,6 +79,7 @@ define service {
 <% if scope.lookupvar("osfamily") == "RedHat" -%>
 ## Yum Updates
 define service {
+    servicegroups       updates
     host_name           <%= @host_name %>
     service_description YUM_Updates
     check_command       check_nrpe_noarg!check_yum
