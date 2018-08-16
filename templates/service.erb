@@ -11,4 +11,7 @@ define service {
 <% end -%>
     notification_period <%= @timeperiod %>
     check_period        <%= @check_period %>
+<% if not @contact_groups.nil? -%>
+    contact_groups <%= @contact_groups %> 
+<% end -%>
 }

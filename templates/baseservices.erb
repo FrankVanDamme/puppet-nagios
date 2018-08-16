@@ -3,12 +3,12 @@
 # #############################
 
 # Load Average
-define service {
-    host_name           <%= @host_name %>
-    service_description Load_Average
-    check_command       check_nrpe_noarg!check_load
-    use                 <%= @use %>
-}
+#define service {
+#    host_name           <%= @host_name %>
+#    service_description Load_Average
+#    check_command       check_nrpe_noarg!check_load
+#    use                 <%= @use %>
+#}
 
 # Swap Usage
 define service {
