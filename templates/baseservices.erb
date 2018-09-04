@@ -82,7 +82,7 @@ define service {
     servicegroups       updates
     host_name           <%= @host_name %>
     service_description YUM_Updates
-    check_command       check_nrpe_noarg!check_yum
+    check_command       check_nrpe_timeout!check_yum
     use                 <%= @use %>
     notifications_enabled 0 
     normal_check_interval 60
