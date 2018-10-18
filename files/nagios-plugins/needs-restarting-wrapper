@@ -1,0 +1,11 @@
+#!/bin/sh
+echo -n "RESTART "
+needs=$(/usr/bin/needs-restarting) 
+
+if [ "$needs" == "" ]
+then
+    echo OK:
+else
+    echo CRITICAL:
+    exit 2
+fi

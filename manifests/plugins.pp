@@ -23,4 +23,5 @@ class nagios::plugins {
       #nrpe_cfg => 'nagios/nrpe_cfg/nrpe-check_yum.cfg.erb',
   }
   nagios::plugin { 'check_ageandcontent.pl': }
+  nagios::plugin { 'needs-restarting-wrapper': }
 }
