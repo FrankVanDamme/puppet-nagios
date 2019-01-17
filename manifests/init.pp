@@ -443,10 +443,9 @@ class nagios (
   Nagios::Command <<| |>> 
 
   ### Include custom class if $my_class is set
-  if $nagios::my_class {
-    include $nagios::my_class
+  if $nagios::my_class and $nagios::my_class != '' {
+    include "$nagios::my_class"
   }
-
 
   ### Provide puppi data, if enabled ( puppi => true )
   if $nagios::bool_puppi == true {
