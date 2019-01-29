@@ -28,6 +28,7 @@
 
 # Plugin directory / home of utils.pm.
 use lib "/usr/lib/nagios/plugins";
+use lib "/usr/lib64/nagios/plugins";
 use utils qw(%ERRORS &print_revision &support &usage);
 use Getopt::Long qw(:config no_ignore_case bundling);
 use File::Basename;
