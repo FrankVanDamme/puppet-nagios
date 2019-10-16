@@ -1,2 +1,2 @@
-command [ get_session_<%= host_name %> ] = /usr/bin/curl --silent -b /tmp/nag_multi_cookie_<%=name %> -c /tmp/nag_multi_cookie_<%=name %> --resolve sesstest.vub.ac.be:80:<%= ip %> http://sesstest.vub.ac.be/lb-test/apptest/set-get-session.php?action=getsessvar
-state [ CRITICAL ] = ( "$get_session_<%= host_name %>$" ne "$randomstring$" )
+command [ get_session_<%= @host_name %> ] = /usr/bin/curl --silent -b /tmp/nag_multi_cookie_<%= @name %> -c /tmp/nag_multi_cookie_<%= @name %> --resolve sesstest.vub.ac.be:80:<%= @ip %> http://sesstest.vub.ac.be/lb-test/apptest/set-get-session.php?action=getsessvar
+state [ CRITICAL ] = ( "$get_session_<%= @host_name %>$" ne "$randomstring$" )
