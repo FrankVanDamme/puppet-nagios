@@ -16,8 +16,19 @@
 
 
 PLUGINDIR=$(dirname $0)
-. $PLUGINDIR/utils.sh
+REL=`lsb_release -d`
 
+if [[ "$REL" =~ (CentOS|Red) ]]
+then
+    PLUGINDIR=/usr/lib64/nagios/plugins
+fi
+
+if [[ "$REL" =~ Debian ]]
+then
+    PLUGINDIR=/usr/lib/nagios/plugins
+fi
+
+. $PLUGINDIR/utils.sh || exit $?
 
 if [[ $# -ne 1 ]]; then
     echo "Usage: ${0##*/} <service name>"
