@@ -32,43 +32,43 @@ class nagios::params {
 
   $cachedir = $::operatingsystem ? {
     /(?i:RedHat|Centos|Scientific|Fedora|Amazon|Linux)/ => '/var/log/nagios',
-    /(?i:Debian|Ubuntu|Mint)/                           => '/var/cache/nagios3',
+    /(?i:Debian|Ubuntu|Mint)/                           => '/var/lib/nagios4',
     default                                             => '/var/cache/nagios',
   }
 
   $resourcefile = $::operatingsystem ? {
     /(?i:RedHat|Centos|Scientific|Fedora|Amazon|Linux)/ => '/etc/nagios/private/resource.cfg',
-    /(?i:Debian|Ubuntu|Mint)/                           => '/etc/nagios3/resource.cfg',
+    /(?i:Debian|Ubuntu|Mint)/                           => '/etc/nagios4/resource.cfg',
     default                                             => '/etc/nagios/resource.cfg',
   }
 
   $statusfile = $::operatingsystem ? {
     /(?i:RedHat|Centos|Scientific|Fedora|Amazon|Linux)/ => '/var/log/nagios/status.dat',
-    /(?i:Debian|Ubuntu|Mint)/                           => '/var/cache/nagios3/status.dat',
+    /(?i:Debian|Ubuntu|Mint)/                           => '/var/lib/nagios4/status.dat',
     default                                             => '/var/lib/nagios/status.dat',
   }
 
   $commandfile = $::operatingsystem ? {
     /(?i:RedHat|Centos|Scientific|Fedora|Amazon|Linux)/ => '/var/spool/nagios/cmd/nagios.cmd',
-    /(?i:Debian|Ubuntu|Mint)/                           => '/var/lib/nagios3/rw/nagios.cmd',
+    /(?i:Debian|Ubuntu|Mint)/                           => '/var/lib/nagios4/rw/nagios.cmd',
     default                                             => '/var/lib/nagios/rw/nagios.cmd',
   }
 
   $resultpath = $::operatingsystem ? {
     /(?i:RedHat|Centos|Scientific|Fedora|Amazon|Linux)/ => '/var/log/nagios/spool/checkresults',
-    /(?i:Debian|Ubuntu|Mint)/                           => '/var/lib/nagios3/spool/checkresults',
+    /(?i:Debian|Ubuntu|Mint)/                           => '/var/lib/nagios4/spool/checkresults',
     default                                             => '/var/lib/nagios/spool/checkresults',
   }
 
   $retentionfile = $::operatingsystem ? {
     /(?i:RedHat|Centos|Scientific|Fedora|Amazon|Linux)/ => '/var/log/nagios/retention.dat',
-    /(?i:Debian|Ubuntu|Mint)/                           => '/var/lib/nagios3/retention.dat',
+    /(?i:Debian|Ubuntu|Mint)/                           => '/var/lib/nagios4/retention.dat',
     default                                             => '/var/lib/nagios/retention.dat',
   }
 
   $p1file  = $::operatingsystem ? {
     /(?i:RedHat|Centos|Scientific|Fedora|Amazon|Linux)/ => '/usr/sbin/p1.pl',
-    /(?i:Debian|Ubuntu|Mint)/                           => '/usr/lib/nagios3/p1.pl',
+    /(?i:Debian|Ubuntu|Mint)/                           => '/usr/lib/nagios4/p1.pl',
     default                                             => '/usr/lib/nagios/p1.pl',
   }
 
@@ -83,7 +83,7 @@ class nagios::params {
   }
 
   $htpasswdfile = $::operatingsystem ? {
-    /(?i:Debian|Ubuntu|Mint)/ => '/etc/nagios3/htpasswd.users',
+    /(?i:Debian|Ubuntu|Mint)/ => '/etc/nagios4/htpasswd.users',
     default                   => '/etc/nagios/htpasswd.users',
   }
 
@@ -91,12 +91,12 @@ class nagios::params {
   ### Application related parameters
 
   $package = $::operatingsystem ? {
-    /(?i:Debian|Ubuntu|Mint)/ => 'nagios3',
+    /(?i:Debian|Ubuntu|Mint)/ => 'nagios4',
     default                   => 'nagios',
   }
 
   $service = $::operatingsystem ? {
-    /(?i:Debian|Ubuntu|Mint)/ => 'nagios3',
+    /(?i:Debian|Ubuntu|Mint)/ => 'nagios4',
     default                   => 'nagios',
   }
 
@@ -105,12 +105,12 @@ class nagios::params {
   }
 
   $process = $::operatingsystem ? {
-    /(?i:Debian|Ubuntu|Mint)/ => 'nagios3',
+    /(?i:Debian|Ubuntu|Mint)/ => 'nagios4',
     default                   => 'nagios',
   }
 
   $restart = $::operatingsystem ? {
-    /(?i:Debian|Ubuntu|Mint)/ => 'service nagios3 reload',
+    /(?i:Debian|Ubuntu|Mint)/ => 'service nagios4 reload',
     default                   => 'service nagios reload',
   }
 
@@ -124,12 +124,12 @@ class nagios::params {
   }
 
   $config_dir = $::operatingsystem ? {
-    /(?i:Debian|Ubuntu|Mint)/ => '/etc/nagios3',
+    /(?i:Debian|Ubuntu|Mint)/ => '/etc/nagios4',
     default                   => '/etc/nagios',
   }
 
   $config_file = $::operatingsystem ? {
-    /(?i:Debian|Ubuntu|Mint)/ => '/etc/nagios3/nagios.cfg',
+    /(?i:Debian|Ubuntu|Mint)/ => '/etc/nagios4/nagios.cfg',
     default                   => '/etc/nagios/nagios.cfg',
   }
 
@@ -149,28 +149,28 @@ class nagios::params {
   }
 
   $config_file_init = $::operatingsystem ? {
-    /(?i:Debian|Ubuntu|Mint)/ => '/etc/default/nagios3',
+    /(?i:Debian|Ubuntu|Mint)/ => '/etc/default/nagios4',
     default                   => '/etc/sysconfig/nagios',
   }
 
   $pid_file = $::operatingsystem ? {
     /(?i:RedHat|Scientific|Centos|Amazon|Linux)/ => '/var/run/nagios.pid',
-    /(?i:Debian|Ubuntu|Mint)/                    => '/var/run/nagios3/nagios3.pid',
+    /(?i:Debian|Ubuntu|Mint)/                    => '/var/run/nagios4/nagios4.pid',
     default                                      => '/var/run/nagios/nagios.pid',
   }
 
   $data_dir = $::operatingsystem ? {
-    /(?i:Debian|Ubuntu|Mint)/ => '/var/lib/nagios3',
+    /(?i:Debian|Ubuntu|Mint)/ => '/var/lib/nagios4',
     default                   => '/var/lib/nagios',
   }
 
   $log_dir = $::operatingsystem ? {
-    /(?i:Debian|Ubuntu|Mint)/ => '/var/log/nagios3',
+    /(?i:Debian|Ubuntu|Mint)/ => '/var/log/nagios4',
     default                   => '/var/log/nagios',
   }
 
   $log_file = $::operatingsystem ? {
-    /(?i:Debian|Ubuntu|Mint)/ => '/var/log/nagios3/nagios.log',
+    /(?i:Debian|Ubuntu|Mint)/ => '/var/log/nagios4/nagios.log',
     default                   => '/var/log/nagios/nagios.log',
   }
 
