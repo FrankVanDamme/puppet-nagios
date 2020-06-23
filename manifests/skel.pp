@@ -242,9 +242,9 @@ class nagios::skel {
     content => template('nagios/hosts/localhost.cfg'),
   }
 
-  # nagios group needs permission to write in /var/lib/nagios3/rw
+  # nagios group needs permission to write in /var/lib/nagios4/rw
   if $::operatingsystem =~ /(?i:Debian|Ubuntu|Mint)/ {
-    file { '/var/lib/nagios3/rw':
+    file { '/var/lib/nagios4/rw':
       ensure  => directory,
       mode    => '0770',
       owner   => $nagios::process_user,
